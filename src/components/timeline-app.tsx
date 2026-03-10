@@ -83,6 +83,7 @@ export function TimelineApp() {
   const [editing, setEditing] = useState<ScheduleEntryWithColor | null>(null);
   const [showIntention, setShowIntention] = useState(true);
   const [showReality, setShowReality] = useState(false);
+  const [realityTouched, setRealityTouched] = useState(false);
 
   const fetchDailyData = async (date: string) => {
     const [scheduleRes, styleRes, statRes] = await Promise.all([
@@ -95,9 +96,13 @@ export function TimelineApp() {
       requestJSON<{ ok: boolean; stats: DailyStats }>(`/api/stats/daily?date=${date}`)
     ]);
 
+    const hasReality = scheduleRes.items.some((entry) => entry.reality?.trim());
     setSchedules(scheduleRes.items);
     setStyles(styleRes.styles);
     setStats(statRes.stats);
+    if (!realityTouched) {
+      setShowReality(hasReality);
+    }
   };
 
   useEffect(() => {
@@ -253,7 +258,10 @@ export function TimelineApp() {
               <input
                 type="checkbox"
                 checked={showReality}
-                onChange={(event) => setShowReality(event.target.checked)}
+                onChange={(event) => {
+                  setShowReality(event.target.checked);
+                  setRealityTouched(true);
+                }}
               />
               显示 REALITY
             </label>
